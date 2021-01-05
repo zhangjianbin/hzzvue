@@ -111,24 +111,28 @@ export default {
       const sheetNames = workbook.SheetNames // 工作表名称集合
       const worksheet = workbook.Sheets[sheetNames[0]] // 这里我们只读取第一张sheet
 
-      const csv = XLSX.utils.sheet_to_csv(worksheet)
-      const rows = csv.split('\n')
+      const csv = XLSX.utils.sheet_to_csv(worksheet,{RS:"^"})
+      const rows = csv.split('^')
       const pms = []
 
       this.fullscreenLoading = true
 
       rows.forEach(function(row, ids) {
-        if (row.length > 0) {
+        if (row.length > 0 && ids>6) {
           pms.push(that.getResult(row))
         }
       })
 
-      Promise.all(pms).then(function(results) {
-        var re = results.join('')
-        that.resultHtml = that.csv2table(re)
-      }).finally(() => {
-        this.fullscreenLoading = false
-      })
+      if(pms.length>0) {
+        Promise.all(pms).then(function(results) {
+          var re = results.join('')
+          re = "教学内容,教师活动,学生活动,设计意图,涵盖的知识维度^" + re;
+          that.resultHtml = that.csv2table(re)
+          
+        }).finally(() => {
+          this.fullscreenLoading = false
+        })
+      }
     },
     getResult(contents) {
       const accesskey = 'jJa0gLGMskjszKnrykQwtCvuEcx5GU'
@@ -153,13 +157,35 @@ export default {
       var pm = new Promise(function(resolve, reject) {
         transformAliyun(params).then(data => {
           var res = data.Content
-          var dd = contents + ',' + res.replace(/,/gi, '')
-          dd += '\n'
+          var dd = contents + ',' + analyzeRe(res)
+          dd += '^'
           resolve(dd)
         })
       })
       return pm
     },
+
+    analyzeRe(res) {
+      var json = JSON.parse(res);
+      var resultStr = ""
+      // console.log(json);
+      
+      var jsonStr = json[0];
+      var jj = JSON.parse(jsonStr);
+      console.log(jj["方法"]);
+      if (jj["方法"]["是"] > 0.8) {
+          resultStr += "-教学知识";
+      }
+      if (jj["工具"]["是"] > 0.8) {
+          resultStr += "-技术知识";
+      }
+      if (jj["内容"]["是"] > 0.8) {
+          resultStr += "-内容知识";
+      }
+      return resultStr;
+    },
+
+
     generateUUID() {
       var d = new Date().getTime()
       if (window.performance && typeof window.performance.now === 'function') {
@@ -195,18 +221,18 @@ export default {
     },
     csv2table(csv) {
       var html = '<table class="result_table">'
-      var rows = csv.split('\n')
+      var rows = csv.split('^')
       rows.pop() // 最后一行没用的
       rows.forEach(function(row, idx) {
         var columns = row.split(',')
-        columns.unshift(idx + 1) // 添加行索引
-        if (idx == 0) { // 添加列索引
-          html += '<tr>'
-          for (var i = 0; i < columns.length; i++) {
-            html += '<th class="result_border">' + (i == 0 ? '' : String.fromCharCode(65 + i - 1)) + '</th>'
-          }
-          html += '</tr>'
-        }
+        // columns.unshift(idx + 1) // 添加行索引
+        // if (idx == 0) { // 添加列索引
+        //   html += '<tr>'
+        //   for (var i = 0; i < columns.length; i++) {
+        //     html += '<th class="result_border">' + (i == 0 ? '' : String.fromCharCode(65 + i - 1)) + '</th>'
+        //   }
+        //   html += '</tr>'
+        // }
         html += '<tr>'
         columns.forEach(function(column) {
           html += '<td class="result_border">' + column + '</td>'
@@ -227,11 +253,11 @@ export default {
         csv.push(temp.join(','))
       })
       csv.shift()
-      return csv.join('\n')
+      return csv.join('^')
     },
     csv2sheet(csv) {
       var sheet = {} // 将要生成的sheet
-      csv = csv.split('\n')
+      csv = csv.split('^')
       csv.forEach(function(row, i) {
         row = row.split(',')
         if (i == 0) sheet['!ref'] = 'A1:' + String.fromCharCode(65 + row.length - 1) + (csv.length)
