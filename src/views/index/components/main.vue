@@ -42,7 +42,7 @@
       >
         <i class="el-icon-upload" />
         <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em>EXCEL</div>
-        <div slot="tip" class="el-upload__tip">！提示：请按照我们提供的模板创建您的教案，否则系统将无法完成解析。</div>
+        <div slot="tip" class="el-upload__tip">！提示：请按照我们提供的<a style="color:#3a95fd;margin:0 5px;" href="/assets/教案模板.xlsx" download="教案模板.xlsx">模板</a>创建您的教案，否则系统将无法完成解析。</div>
       </el-upload>
     </div>
     <div class="label">概要分析:</div>
@@ -78,7 +78,7 @@ export default {
       },
       resultHtml: '',
       fullscreenLoading: false,
-      dict: {"ALL":0,"TPACK":0,"TPK":0,"PCK":0,"TCK":0,"onlyone":0}
+      dict: { 'ALL': 0, 'TPACK': 0, 'TPK': 0, 'PCK': 0, 'TCK': 0, 'onlyone': 0 }
     }
   },
   methods: {
@@ -113,24 +113,23 @@ export default {
       const sheetNames = workbook.SheetNames // 工作表名称集合
       const worksheet = workbook.Sheets[sheetNames[0]] // 这里我们只读取第一张sheet
 
-      const csv = XLSX.utils.sheet_to_csv(worksheet,{RS:"^"})
+      const csv = XLSX.utils.sheet_to_csv(worksheet, { RS: '^' })
       const rows = csv.split('^')
       const pms = []
 
       this.fullscreenLoading = true
 
       rows.forEach(function(row, ids) {
-        if (row.length > 0 && ids>6) {
+        if (row.length > 0 && ids > 6) {
           pms.push(that.getResult(row))
         }
       })
 
-      if(pms.length>0) {
+      if (pms.length > 0) {
         Promise.all(pms).then(function(results) {
           var re = results.join('')
-          re = "教学内容,教师活动,学生活动,设计意图,涵盖的知识维度^" + re;
+          re = '教学内容,教师活动,学生活动,设计意图,涵盖的知识维度^' + re
           that.resultHtml = that.csv2table(re)
-          
         }).finally(() => {
           this.fullscreenLoading = false
         })
@@ -155,7 +154,7 @@ export default {
       }
       const signature = this.getSignature(params, accesskey)
       params.Signature = signature
-      var that=this
+      var that = this
       var pm = new Promise(function(resolve, reject) {
         transformAliyun(params).then(data => {
           var res = data.Content
@@ -166,47 +165,46 @@ export default {
       })
       return pm
     },
-    
+
     analyzeRe(res) {
-      var json = JSON.parse(res);
-      var resultStr = ""
+      var json = JSON.parse(res)
+      var resultStr = ''
       // console.log(json);
-      
-      var jsonStr = json[0];
-      var jj = JSON.parse(jsonStr);
+
+      var jsonStr = json[0]
+      var jj = JSON.parse(jsonStr)
       // console.log(jj["方法"]);
       var initvalue = 0
-      if (jj["方法"]["是"] > 0.8) {
-          resultStr += "-教学知识";
-          initvalue = initvalue | 4
+      if (jj['方法']['是'] > 0.8) {
+        resultStr += '-教学知识'
+        initvalue = initvalue | 4
       }
-      if (jj["工具"]["是"] > 0.8) {
-          resultStr += "-技术知识";
-          initvalue = initvalue | 2
+      if (jj['工具']['是'] > 0.8) {
+        resultStr += '-技术知识'
+        initvalue = initvalue | 2
       }
-      if (jj["内容"]["是"] > 0.8) {
-          resultStr += "-内容知识";
-          initvalue = initvalue | 1
+      if (jj['内容']['是'] > 0.8) {
+        resultStr += '-内容知识'
+        initvalue = initvalue | 1
       }
-      if(initvalue == 7) {// 包含方法，工具，内容
-        this.dict["TPACK"]+=1;
-      } else if(initvalue == 6){// 包含方法，工具
-        this.dict["TPK"]+=1;
-      } else if(initvalue == 5){// 包含方法，，内容
-        this.dict["PCK"]+=1;
-      } else if(initvalue == 4){// 包含方法，
-        this.dict["onlyone"]+=1;
-      } else if(initvalue == 3){// 包含工具，内容
-        this.dict["TCK"]+=1;
-      } else if(initvalue == 2){// 包含工具
-        this.dict["onlyone"]+=1;
-      } else if(initvalue == 1){// 包含内容
-        this.dict["onlyone"]+=1;
+      if (initvalue == 7) { // 包含方法，工具，内容
+        this.dict['TPACK'] += 1
+      } else if (initvalue == 6) { // 包含方法，工具
+        this.dict['TPK'] += 1
+      } else if (initvalue == 5) { // 包含方法，，内容
+        this.dict['PCK'] += 1
+      } else if (initvalue == 4) { // 包含方法，
+        this.dict['onlyone'] += 1
+      } else if (initvalue == 3) { // 包含工具，内容
+        this.dict['TCK'] += 1
+      } else if (initvalue == 2) { // 包含工具
+        this.dict['onlyone'] += 1
+      } else if (initvalue == 1) { // 包含内容
+        this.dict['onlyone'] += 1
       }
-      this.dict["ALL"]+=1;
-      return resultStr;
+      this.dict['ALL'] += 1
+      return resultStr
     },
-
 
     generateUUID() {
       var d = new Date().getTime()

@@ -7,7 +7,7 @@ export const constantRoutes = [
   {
     path: '/index',
     component: () => import('@/views/index/index'),
-    meta: { title: '首页', icon: 'setting' },
+    meta: { title: '首页', icon: 'setting' }
   },
   {
     path: '/404',
