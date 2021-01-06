@@ -29,7 +29,7 @@
         ref="upload"
         class="upload-local"
         drag
-        action="http://118.89.240.201/upload/upload-file"
+        action="http://8.129.227.241/upload/upload-file"
         :data="{
           uploadSubPath: 'excel',
           token: '654321'
@@ -49,7 +49,7 @@
     <div class="contentBox">
       <div class="resultTxt">您一共设计了{{ dict["ALL"] }}个教学活动，其中涵盖技术教学内容知识（TPACK）的活动有{{ dict["TPACK"] }}个，涵盖技术教学内容知识（TPK）
         的活动有{{ dict["TPK"] }}个，涵盖教学内容知识（PAK）的活动有{{ dict["PCK"] }}个，涵盖技术内容知识（TCK）的活动有{{ dict["TCK"] }}个，只包含单一
-        维度知识的活动有{{ dict["onlyone"] }}个。
+        维度知识的活动有{{ dict["onlyone"] }}个。{{ dict["tips"] }}
       </div>
     </div>
     <div class="label">详细结果:</div>
@@ -78,7 +78,7 @@ export default {
       },
       resultHtml: '',
       fullscreenLoading: false,
-      dict: { 'ALL': 0, 'TPACK': 0, 'TPK': 0, 'PCK': 0, 'TCK': 0, 'onlyone': 0 }
+      dict: { 'ALL': 0, 'TPACK': 0, 'TPK': 0, 'PCK': 0, 'TCK': 0, 'onlyone': 0, 'zero': 0, 'tips': '' }
     }
   },
   methods: {
@@ -132,6 +132,14 @@ export default {
           that.resultHtml = that.csv2table(re)
         }).finally(() => {
           this.fullscreenLoading = false
+          var tips = '我们建议您——';
+          if(this.dict['ALL']<5){
+            tips += '细化或增加教学活动量.';
+          } 
+          if((this.dict['onlyone'] + this.dict['zero']) >  this.dict['ALL']/2){
+            tips += '加强知识的综合运用。';
+          }
+          this.dict['tips'] = tips;
         })
       }
     },
@@ -201,6 +209,8 @@ export default {
         this.dict['onlyone'] += 1
       } else if (initvalue == 1) { // 包含内容
         this.dict['onlyone'] += 1
+      } else if(initvalue == 0){
+        this.dict['zero'] += 1
       }
       this.dict['ALL'] += 1
       return resultStr
@@ -395,6 +405,7 @@ export default {
   .result_border{
     border: solid 1px #6D6D6D;
     padding: 5px 10px;
+    width: 20%;
   }
 
 </style>
