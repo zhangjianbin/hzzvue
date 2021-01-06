@@ -47,9 +47,9 @@
     </div>
     <div class="label">概要分析:</div>
     <div class="contentBox">
-      <div class="resultTxt">您一共设计了XX个教学活动，其中涵盖技术教学内容知识（TPACK）的活动有XX个，涵盖技术教学内容知识（TPK）
-        的活动有XX个，涵盖教学内容知识（PAK）的活动有XX个，涵盖技术内容知识（TCK）的活动有XX个，只包含单一
-        维度知识的活动有XX个。
+      <div class="resultTxt">您一共设计了{{ dict["ALL"] }}个教学活动，其中涵盖技术教学内容知识（TPACK）的活动有{{ dict["TPACK"] }}个，涵盖技术教学内容知识（TPK）
+        的活动有{{ dict["TPK"] }}个，涵盖教学内容知识（PAK）的活动有{{ dict["PCK"] }}个，涵盖技术内容知识（TCK）的活动有{{ dict["TCK"] }}个，只包含单一
+        维度知识的活动有{{ dict["onlyone"] }}个。
       </div>
     </div>
     <div class="label">详细结果:</div>
@@ -67,6 +67,7 @@
 import XLSX from 'xlsx'
 import $ from 'jquery'
 import { transformAliyun } from '@/api/index'
+
 export default {
   data() {
     return {
@@ -76,7 +77,8 @@ export default {
         content: '循环语句'
       },
       resultHtml: '',
-      fullscreenLoading: false
+      fullscreenLoading: false,
+      dict: {"ALL":0,"TPACK":0,"TPK":0,"PCK":0,"TCK":0,"onlyone":0}
     }
   },
   methods: {
@@ -153,18 +155,18 @@ export default {
       }
       const signature = this.getSignature(params, accesskey)
       params.Signature = signature
-
+      var that=this
       var pm = new Promise(function(resolve, reject) {
         transformAliyun(params).then(data => {
           var res = data.Content
-          var dd = contents + ',' + analyzeRe(res)
+          var dd = contents + ',' + that.analyzeRe(res)
           dd += '^'
           resolve(dd)
         })
       })
       return pm
     },
-
+    
     analyzeRe(res) {
       var json = JSON.parse(res);
       var resultStr = ""
@@ -172,16 +174,36 @@ export default {
       
       var jsonStr = json[0];
       var jj = JSON.parse(jsonStr);
-      console.log(jj["方法"]);
+      // console.log(jj["方法"]);
+      var initvalue = 0
       if (jj["方法"]["是"] > 0.8) {
           resultStr += "-教学知识";
+          initvalue = initvalue | 4
       }
       if (jj["工具"]["是"] > 0.8) {
           resultStr += "-技术知识";
+          initvalue = initvalue | 2
       }
       if (jj["内容"]["是"] > 0.8) {
           resultStr += "-内容知识";
+          initvalue = initvalue | 1
       }
+      if(initvalue == 7) {// 包含方法，工具，内容
+        this.dict["TPACK"]+=1;
+      } else if(initvalue == 6){// 包含方法，工具
+        this.dict["TPK"]+=1;
+      } else if(initvalue == 5){// 包含方法，，内容
+        this.dict["PCK"]+=1;
+      } else if(initvalue == 4){// 包含方法，
+        this.dict["onlyone"]+=1;
+      } else if(initvalue == 3){// 包含工具，内容
+        this.dict["TCK"]+=1;
+      } else if(initvalue == 2){// 包含工具
+        this.dict["onlyone"]+=1;
+      } else if(initvalue == 1){// 包含内容
+        this.dict["onlyone"]+=1;
+      }
+      this.dict["ALL"]+=1;
       return resultStr;
     },
 
