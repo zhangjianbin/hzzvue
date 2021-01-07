@@ -113,14 +113,17 @@ export default {
       const sheetNames = workbook.SheetNames // 工作表名称集合
       const worksheet = workbook.Sheets[sheetNames[0]] // 这里我们只读取第一张sheet
 
-      const csv = XLSX.utils.sheet_to_csv(worksheet, { RS: '^' })
+      const csv = XLSX.utils.sheet_to_csv(worksheet, { RS: '^' ,blankrows:false})
       const rows = csv.split('^')
       const pms = []
-
+      this.dict = { 'ALL': 0, 'TPACK': 0, 'TPK': 0, 'PCK': 0, 'TCK': 0, 'onlyone': 0, 'zero': 0, 'tips': '' };
       this.fullscreenLoading = true
 
       rows.forEach(function(row, ids) {
+        // console.log('----+++++++++---')
+        //   console.log(row)
         if (row.length > 0 && ids > 6) {
+          // console.log('++++++++++')
           pms.push(that.getResult(row))
         }
       })
