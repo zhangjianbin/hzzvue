@@ -279,10 +279,10 @@ export default {
         $(this).find('td').each(function() {
           temp.push($(this).html())
         })
-        temp.shift() // 移除第一个
+        // temp.shift() // 移除第一个
         csv.push(temp.join(','))
       })
-      csv.shift()
+      // csv.shift()
       return csv.join('^')
     },
     csv2sheet(csv) {
