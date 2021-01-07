@@ -5,8 +5,8 @@
       <span class="logo_desc">一起为更好的教育</span>
     </div>
     <div class="crumbs">
-      <span class="crumbItem" @click="jumpIndex">首页</span>
-      <span class="crumbItem">/</span>
+      <!-- <span class="crumbItem" @click="jumpIndex">首页</span> -->
+      <!-- <span class="crumbItem">/</span> -->
       <span class="crumbItem">联系我们</span>
     </div>
   </div>

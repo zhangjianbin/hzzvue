@@ -20,7 +20,7 @@ module.exports = {
     }
   },
   configureWebpack: {
-    name: "HZZ",
+    name: "Smart Learning",
     resolve: {
       alias: {
         '@': resolve('src')
